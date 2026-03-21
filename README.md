@@ -36,19 +36,28 @@ A clean, fast, lightweight Markdown reader for Windows.
 
 ## How This Project Was Built
 
-MarkView was built using **STL (Semantic Tension Language)** — a structured knowledge representation language designed for precise communication between AI models and between humans and AI.
+MarkView was born from a controlled experiment: **does the format of a specification affect the quality of LLM-generated code?**
+
+We wrote the same app spec in three formats — Natural Language (NL), STL, and STLC — and gave each to a separate Google Gemini instance. Same 19 features, same tech stack, same prompt. The results:
+
+| Metric | Natural Language | STL | STLC |
+|--------|:---:|:---:|:---:|
+| **Feature Completion** | 8.5/19 (45%) | **13/19 (68%)** | 10/19 (53%) |
+| **Compiles?** | NO | **YES** | YES |
+| **Fully Autonomous?** | NO | **YES** | NO |
+| **Human Interventions** | 1+ | **0** | 1 |
+
+**STL was the only format that compiled on the first attempt with zero human intervention.** The NL version didn't even compile (missing `build.rs`, broken regex). The STLC version compiled but missed practical details like CSS imports — correct logic, broken visuals.
 
 ### The Process
 
-1. **Planning (Claude)** — The full application specification was written in STL format ([`plan_stl.md`](plan_stl.md)). STL encodes requirements, architecture decisions, component relationships, and implementation details as a graph of semantic edges with explicit confidence scores, rules, and intent.
+1. **Planning (Claude)** — Claude wrote the full application specification in STL format ([`plan_stl.md`](plan_stl.md)), encoding every feature, component, and dependency as typed semantic edges with explicit confidence scores.
 
-2. **Implementation (Gemini)** — The STL plan was passed to Google Gemini, which read the structured specification and generated the complete working codebase — Rust backend, React frontend, styling, and configuration — in a single pass.
+2. **Implementation (Gemini)** — The STL plan was passed to Google Gemini, which generated the complete working codebase — Rust backend, React frontend, styling, and configuration — autonomously in a single pass.
 
-### Why STL?
+### What Is STL?
 
-Traditional natural language specs are ambiguous. When you hand a 2,000-word requirements doc to an LLM, the model must guess intent, infer priorities, and fill in gaps. Information degrades at every handoff.
-
-STL solves this by encoding knowledge as **typed, weighted semantic edges**:
+**STL (Semantic Tension Language)** encodes knowledge as **typed, weighted semantic edges**:
 
 ```
 [MarkView] -> [Markdown_Reader] ::mod(
@@ -59,13 +68,11 @@ STL solves this by encoding knowledge as **typed, weighted semantic edges**:
 ```
 
 Each edge carries:
-- **`rule`** — the type of relationship (causal, definitional, empirical, logical)
-- **`confidence`** — how certain this statement is (0.0–1.0)
-- **`intent`** — what this means in context
+- **`rule`** — relationship type (causal, definitional, empirical, logical)
+- **`confidence`** — certainty level (0.0–1.0). `0.99` = hard requirement. `0.7` = nice to have.
+- **`intent`** — what this actually means in context
 
-This means STL plans can be transferred between different AI models (Claude, Gemini, GPT, etc.) with **higher fidelity** than prose. The structured format eliminates ambiguity, preserves confidence levels, and lets the receiving model know exactly what is a hard requirement (`confidence=0.99`) versus a suggestion (`confidence=0.7`).
-
-**MarkView is a proof of concept**: one model architects, another implements, and STL is the lossless wire format between them.
+Natural language buries priorities between the lines. STL makes them explicit — and transferable between any AI model (Claude, Gemini, GPT) with near-zero information loss.
 
 Learn more about STL at [stl-lang.org](https://stl-lang.org).
 
