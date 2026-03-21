@@ -10,6 +10,8 @@ A clean, fast, lightweight Markdown reader for Windows.
 | Portable (.exe) | [MarkView_v1.0.3_portable.exe](https://github.com/scos-lab/markview/releases/download/v1.0.3/MarkView_v1.0.3_portable.exe) |
 | Installer (MSI) | [MarkView_v1.0.3_x64.msi](https://github.com/scos-lab/markview/releases/download/v1.0.3/MarkView.-.Markdown.Reader_1.0.3_x64_en-US.msi) |
 
+> **Note:** Windows SmartScreen may warn about downloaded `.exe` / `.msi` files because they are not code-signed. To bypass: click **"More info"** → **"Run anyway"**. Alternatively, right-click the file → **Properties** → check **"Unblock"** → OK. The **Microsoft Store** version does not have this issue.
+
 ## Features
 
 - **Markdown Rendering** — GFM tables, task lists, math/KaTeX, code syntax highlighting
