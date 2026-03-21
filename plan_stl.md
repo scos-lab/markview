@@ -1,4 +1,4 @@
-# MarkView — 跨平台 Markdown 阅读器 (STL Plan)
+# MarkView — Lightweight Markdown Reader for Windows (STL Plan)
 
 > **Protocol:** STL Core v1.0 — Semantic Tension Language (knowledge representation)
 
