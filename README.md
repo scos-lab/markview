@@ -8,7 +8,7 @@ A clean, fast, lightweight Markdown reader for Windows.
 |---------|------|
 | Microsoft Store | [Get it from Microsoft Store](https://apps.microsoft.com/detail/9NV09JZ3X052) |
 | Portable (.exe) | [MarkView_v1.0.3_portable.exe](https://github.com/scos-lab/markview/releases/download/v1.0.3/MarkView_v1.0.3_portable.exe) |
-| Installer (NSIS) | [MarkView_v1.0.3_x64-setup.exe](https://github.com/scos-lab/markview/releases/download/v1.0.3/MarkView.-.Markdown.Reader_1.0.3_x64-setup.exe) |
+| Installer (MSI) | [MarkView_v1.0.3_x64.msi](https://github.com/scos-lab/markview/releases/download/v1.0.3/MarkView.-.Markdown.Reader_1.0.3_x64_en-US.msi) |
 
 ## Features
 
