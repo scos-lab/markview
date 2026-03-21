@@ -1,0 +1,497 @@
+// MarkView — Design Document v1.0.1
+// A lightweight Markdown reader for Windows
+// Last updated: 2026-03-03
+
+// ═══════════════════════════════════════════════
+// 1. Product Identity
+// ═══════════════════════════════════════════════
+
+[MarkView] -> [MarkdownReader] ::mod(
+  rule="definitional",
+  confidence=1.0,
+  domain="desktop_application",
+  description="Lightweight Markdown reader for Windows"
+)
+
+[MarkView] -> [WindowsStore] ::mod(
+  rule="causal",
+  confidence=0.95,
+  domain="distribution",
+  description="Published via Microsoft Store as MSIX package"
+)
+
+[MarkView] -> [Version_1_0_1] ::mod(
+  rule="definitional",
+  confidence=1.0,
+  timestamp="2026-03-03",
+  version="1.0.1.0"
+)
+
+// ═══════════════════════════════════════════════
+// 2. Technology Stack
+// ═══════════════════════════════════════════════
+
+[MarkView] -> [Tauri2] ::mod(
+  rule="definitional",
+  confidence=1.0,
+  domain="framework",
+  description="Desktop framework — Rust backend + WebView2 frontend"
+)
+
+[Tauri2] -> [Rust] ::mod(
+  rule="definitional",
+  confidence=1.0,
+  domain="backend",
+  description="Backend: file I/O, file watching, OS integration"
+)
+
+[Tauri2] -> [WebView2] ::mod(
+  rule="definitional",
+  confidence=1.0,
+  domain="renderer",
+  description="Windows native web renderer — no bundled Chromium"
+)
+
+[MarkView] -> [React19] ::mod(
+  rule="definitional",
+  confidence=1.0,
+  domain="frontend",
+  description="UI framework with hooks-based architecture"
+)
+
+[MarkView] -> [TypeScript] ::mod(
+  rule="definitional",
+  confidence=1.0,
+  domain="language",
+  description="Type-safe frontend code"
+)
+
+[MarkView] -> [Zustand5] ::mod(
+  rule="definitional",
+  confidence=1.0,
+  domain="state_management",
+  description="Lightweight store — single appStore for all state"
+)
+
+[MarkView] -> [TailwindCSS4] ::mod(
+  rule="definitional",
+  confidence=1.0,
+  domain="styling",
+  description="Utility-first CSS with CSS variable theming"
+)
+
+[MarkView] -> [Unified] ::mod(
+  rule="definitional",
+  confidence=1.0,
+  domain="markdown_pipeline",
+  description="remark-parse -> remark-gfm -> remark-math -> rehype -> rehype-highlight -> rehype-katex -> rehype-stringify"
+)
+
+// ═══════════════════════════════════════════════
+// 3. Architecture — File Structure
+// ═══════════════════════════════════════════════
+
+// --- Rust Backend ---
+
+[Backend:lib_rs] -> [TauriBuilder] ::mod(
+  rule="definitional",
+  confidence=1.0,
+  description="App entry: plugin registration, single-instance handler, file-association setup event"
+)
+
+[Backend:commands_rs] -> [Command:read_file] ::mod(
+  rule="definitional",
+  confidence=1.0,
+  description="Read file content from path -> String"
+)
+
+[Backend:commands_rs] -> [Command:open_file_dialog] ::mod(
+  rule="definitional",
+  confidence=1.0,
+  description="Native file picker filtered to .md/.mdx/.markdown"
+)
+
+[Backend:commands_rs] -> [Command:watch_file] ::mod(
+  rule="definitional",
+  confidence=1.0,
+  description="notify crate file watcher -> emits 'file-changed' event"
+)
+
+[Backend:commands_rs] -> [Command:unwatch_file] ::mod(
+  rule="definitional",
+  confidence=1.0,
+  description="Stop active file watcher"
+)
+
+[Backend:commands_rs] -> [Command:open_default_apps_settings] ::mod(
+  rule="definitional",
+  confidence=1.0,
+  description="Opens ms-settings:defaultapps via cmd"
+)
+
+// --- Frontend Components ---
+
+[Frontend:App_tsx] -> [AppRoot] ::mod(
+  rule="definitional",
+  confidence=1.0,
+  description="Root component: layout, keyboard shortcuts, event listeners (file-changed, file-association-open, drag-drop)"
+)
+
+[Frontend:MarkdownView_tsx] -> [ContentRenderer] ::mod(
+  rule="definitional",
+  confidence=1.0,
+  description="Renders HTML via dangerouslySetInnerHTML, search highlight via useMemo, link interception, image src conversion"
+)
+
+[Frontend:TOC_tsx] -> [TableOfContents] ::mod(
+  rule="definitional",
+  confidence=1.0,
+  description="Sidebar navigation — IntersectionObserver tracks active heading, smooth scroll on click"
+)
+
+[Frontend:TabBar_tsx] -> [TabSystem] ::mod(
+  rule="definitional",
+  confidence=1.0,
+  description="Multi-tab file management with close buttons"
+)
+
+[Frontend:Toolbar_tsx] -> [ToolbarActions] ::mod(
+  rule="definitional",
+  confidence=1.0,
+  description="Open file, theme toggle, font size, about dialog"
+)
+
+[Frontend:SearchBar_tsx] -> [SearchUI] ::mod(
+  rule="definitional",
+  confidence=1.0,
+  description="Ctrl+F search bar with match count, prev/next navigation"
+)
+
+[Frontend:WelcomePage_tsx] -> [EmptyState] ::mod(
+  rule="definitional",
+  confidence=1.0,
+  description="Recent files list, open file button, drag-drop prompt"
+)
+
+[Frontend:SetDefaultModal_tsx] -> [DefaultAppPrompt] ::mod(
+  rule="definitional",
+  confidence=1.0,
+  description="First-launch modal to set MarkView as default .md reader"
+)
+
+[Frontend:AboutModal_tsx] -> [AppInfo] ::mod(
+  rule="definitional",
+  confidence=1.0,
+  description="Version info, credits"
+)
+
+// --- Hooks ---
+
+[Hook:useMarkdown_ts] -> [MarkdownPipeline] ::mod(
+  rule="definitional",
+  confidence=1.0,
+  description="Module-level singleton unified processor. Unicode-aware heading ID generation with dedup. Watches rawMarkdown -> outputs renderedHTML + headings"
+)
+
+[Hook:useTheme_ts] -> [ThemePersistence] ::mod(
+  rule="definitional",
+  confidence=1.0,
+  description="Cached store.json singleton. Loads/saves theme, fontSize, recentFiles, hasPromptedDefault via tauri-plugin-store"
+)
+
+// --- State ---
+
+[Store:appStore_ts] -> [ZustandStore] ::mod(
+  rule="definitional",
+  confidence=1.0,
+  description="Single flat store: tabs[], activeTabId, currentFile, rawMarkdown, renderedHTML, headings, recentFiles, theme, fontSize, search state, sidebar state"
+)
+
+// --- Utils ---
+
+[Utils:tauriCommands_ts] -> [CommandWrapper] ::mod(
+  rule="definitional",
+  confidence=1.0,
+  description="TypeScript wrappers around Tauri invoke calls"
+)
+
+// ═══════════════════════════════════════════════
+// 4. Features
+// ═══════════════════════════════════════════════
+
+[Feature:FileAssociation] -> [MarkView] ::mod(
+  rule="causal",
+  confidence=1.0,
+  description=".md/.mdx/.markdown file association via MSIX manifest + tauri.conf.json fileAssociations"
+)
+
+[Feature:SingleInstance] -> [MarkView] ::mod(
+  rule="causal",
+  confidence=1.0,
+  description="tauri-plugin-single-instance — second launch forwards file path to existing window via event"
+)
+
+[Feature:LiveReload] -> [MarkView] ::mod(
+  rule="causal",
+  confidence=1.0,
+  description="notify crate watches active file, emits 'file-changed' event, frontend reloads content"
+)
+
+[Feature:Search] -> [MarkView] ::mod(
+  rule="causal",
+  confidence=1.0,
+  description="Ctrl+F in-document search. HTML string modification in useMemo — splits HTML by tags, highlights text segments only. Orange current match, yellow others. Auto-scroll via requestAnimationFrame + scrollIntoView"
+)
+
+[Feature:TOC] -> [MarkView] ::mod(
+  rule="causal",
+  confidence=1.0,
+  description="Sidebar Table of Contents. IntersectionObserver with visible Set — picks first heading in document order. Unicode regex \\p{L}\\p{N} for Chinese heading IDs"
+)
+
+[Feature:MultiTab] -> [MarkView] ::mod(
+  rule="causal",
+  confidence=1.0,
+  description="Tab-based multi-file viewing. Ctrl+Tab / Ctrl+Shift+Tab to switch. Ctrl+W to close"
+)
+
+[Feature:ThemeSwitching] -> [MarkView] ::mod(
+  rule="causal",
+  confidence=1.0,
+  description="Light/dark theme via CSS variables. Ctrl+Shift+T to toggle. Persisted in store.json"
+)
+
+[Feature:FontSize] -> [MarkView] ::mod(
+  rule="causal",
+  confidence=1.0,
+  description="Ctrl+= / Ctrl+- / Ctrl+0. Range 12-28px, default 16px"
+)
+
+[Feature:CodeHighlight] -> [MarkView] ::mod(
+  rule="causal",
+  confidence=1.0,
+  description="rehype-highlight (highlight.js) for fenced code blocks"
+)
+
+[Feature:MathRendering] -> [MarkView] ::mod(
+  rule="causal",
+  confidence=1.0,
+  description="remark-math + rehype-katex for LaTeX math expressions"
+)
+
+[Feature:GFM] -> [MarkView] ::mod(
+  rule="causal",
+  confidence=1.0,
+  description="GitHub Flavored Markdown: tables, strikethrough, autolinks, task lists via remark-gfm"
+)
+
+[Feature:DragDrop] -> [MarkView] ::mod(
+  rule="causal",
+  confidence=1.0,
+  description="Drag .md files onto window to open"
+)
+
+[Feature:ExternalLinks] -> [MarkView] ::mod(
+  rule="causal",
+  confidence=1.0,
+  description="http/https links open in system browser via tauri-plugin-shell. Anchor links scroll within document"
+)
+
+[Feature:Print] -> [MarkView] ::mod(
+  rule="causal",
+  confidence=1.0,
+  description="Ctrl+P triggers window.print()"
+)
+
+// ═══════════════════════════════════════════════
+// 5. Keyboard Shortcuts
+// ═══════════════════════════════════════════════
+
+[Shortcut:Ctrl_O] -> [Action:OpenFile] ::mod(rule="definitional", confidence=1.0)
+[Shortcut:Ctrl_W] -> [Action:CloseTab] ::mod(rule="definitional", confidence=1.0)
+[Shortcut:Ctrl_Tab] -> [Action:NextTab] ::mod(rule="definitional", confidence=1.0)
+[Shortcut:Ctrl_Shift_Tab] -> [Action:PrevTab] ::mod(rule="definitional", confidence=1.0)
+[Shortcut:Ctrl_F] -> [Action:Search] ::mod(rule="definitional", confidence=1.0)
+[Shortcut:Ctrl_P] -> [Action:Print] ::mod(rule="definitional", confidence=1.0)
+[Shortcut:Ctrl_Shift_T] -> [Action:ToggleTheme] ::mod(rule="definitional", confidence=1.0)
+[Shortcut:Ctrl_Plus] -> [Action:FontIncrease] ::mod(rule="definitional", confidence=1.0)
+[Shortcut:Ctrl_Minus] -> [Action:FontDecrease] ::mod(rule="definitional", confidence=1.0)
+[Shortcut:Ctrl_0] -> [Action:FontReset] ::mod(rule="definitional", confidence=1.0)
+[Shortcut:Ctrl_B] -> [Action:ToggleSidebar] ::mod(rule="definitional", confidence=1.0)
+[Shortcut:Escape] -> [Action:CloseSearch] ::mod(rule="definitional", confidence=1.0)
+
+// ═══════════════════════════════════════════════
+// 6. Data Flow
+// ═══════════════════════════════════════════════
+
+[UserAction:OpenFile] -> [Rust:read_file] ::mod(
+  rule="causal",
+  confidence=1.0,
+  description="User opens file -> Rust reads from disk"
+)
+
+[Rust:read_file] -> [Store:addTab] ::mod(
+  rule="causal",
+  confidence=1.0,
+  description="Raw markdown stored in new tab"
+)
+
+[Store:rawMarkdown] -> [Hook:useMarkdown] ::mod(
+  rule="causal",
+  confidence=1.0,
+  description="rawMarkdown change triggers unified pipeline"
+)
+
+[Hook:useMarkdown] -> [Store:renderedHTML] ::mod(
+  rule="causal",
+  confidence=1.0,
+  description="Pipeline outputs HTML string + headings array -> store"
+)
+
+[Store:renderedHTML] -> [Component:MarkdownView] ::mod(
+  rule="causal",
+  confidence=1.0,
+  description="MarkdownView renders via dangerouslySetInnerHTML"
+)
+
+[Store:headings] -> [Component:TOC] ::mod(
+  rule="causal",
+  confidence=1.0,
+  description="TOC subscribes to headings for sidebar navigation"
+)
+
+[Rust:watch_file] -> [Event:file_changed] ::mod(
+  rule="causal",
+  confidence=1.0,
+  description="notify detects modification -> emits event"
+)
+
+[Event:file_changed] -> [Store:rawMarkdown] ::mod(
+  rule="causal",
+  confidence=1.0,
+  description="Frontend re-reads file content -> triggers re-render pipeline"
+)
+
+// ═══════════════════════════════════════════════
+// 7. Persistence
+// ═══════════════════════════════════════════════
+
+[Persistence:store_json] -> [Config:theme] ::mod(
+  rule="definitional",
+  confidence=1.0,
+  description="'light' | 'dark'"
+)
+
+[Persistence:store_json] -> [Config:fontSize] ::mod(
+  rule="definitional",
+  confidence=1.0,
+  description="12-28, default 16"
+)
+
+[Persistence:store_json] -> [Config:recentFiles] ::mod(
+  rule="definitional",
+  confidence=1.0,
+  description="Last 10 opened file paths"
+)
+
+[Persistence:store_json] -> [Config:hasPromptedDefault] ::mod(
+  rule="definitional",
+  confidence=1.0,
+  description="Boolean — suppresses first-launch default app prompt"
+)
+
+[Persistence:Location] -> [AppData] ::mod(
+  rule="definitional",
+  confidence=1.0,
+  description="%APPDATA%/com.markview.app/store.json"
+)
+
+// ═══════════════════════════════════════════════
+// 8. Distribution
+// ═══════════════════════════════════════════════
+
+[Distribution:Build] -> [Tauri2:NSIS] ::mod(
+  rule="causal",
+  confidence=1.0,
+  description="npm run tauri build -> produces NSIS .exe installer"
+)
+
+[Distribution:NSIS] -> [MSIX_Packaging_Tool] ::mod(
+  rule="causal",
+  confidence=1.0,
+  description="NSIS exe captured by MSIX Packaging Tool -> .msix package"
+)
+
+[Distribution:MSIX] -> [WindowsStore] ::mod(
+  rule="causal",
+  confidence=1.0,
+  description="MSIX uploaded to Partner Center, Store handles code signing"
+)
+
+[Distribution:MSIX_Identity] -> [Package:WUKODEV_MarkView_MarkdownReader] ::mod(
+  rule="definitional",
+  confidence=1.0,
+  description="Publisher: CN=6BBADFB4-24CB-4A8D-BD0C-103528E494F3"
+)
+
+[Distribution:Capability] -> [runFullTrust] ::mod(
+  rule="definitional",
+  confidence=1.0,
+  description="Required for Tauri2 desktop app — file system access, WebView2"
+)
+
+[Distribution:FileTypes] -> [Association:md_mdx_markdown] ::mod(
+  rule="definitional",
+  confidence=1.0,
+  description="Registered in AppxManifest.xml with open verb and markdown.png icon"
+)
+
+// ═══════════════════════════════════════════════
+// 9. Performance Optimizations
+// ═══════════════════════════════════════════════
+
+[Optimization:PipelineSingleton] -> [Performance] ::mod(
+  rule="causal",
+  confidence=0.95,
+  description="unified processor created once at module level, not per render"
+)
+
+[Optimization:StoreCaching] -> [Performance] ::mod(
+  rule="causal",
+  confidence=0.95,
+  description="store.json loaded once via cached Promise, shared across all consumers"
+)
+
+[Optimization:StartupDelay] -> [Performance] ::mod(
+  rule="causal",
+  confidence=0.90,
+  description="File association emit delay reduced from 500ms to 150ms"
+)
+
+[Optimization:SearchHighlight] -> [Performance] ::mod(
+  rule="causal",
+  confidence=0.95,
+  description="Search highlight computed as HTML string in useMemo — avoids DOM manipulation that React wipes on re-render"
+)
+
+// ═══════════════════════════════════════════════
+// 10. Known Issues & Future
+// ═══════════════════════════════════════════════
+
+[Issue:IconCache] -> [Windows] ::mod(
+  rule="empirical",
+  confidence=0.85,
+  description="Windows caches app icons — transparent background icon may not display until cache cleared or next version"
+)
+
+[Issue:PackageSize] -> [Distribution] ::mod(
+  rule="empirical",
+  confidence=0.90,
+  description="~9MB MSIX. markview.exe alone is 8.4MB (Tauri + WebView2 baseline). Cannot reduce further without switching away from Tauri"
+)
+
+[Future:PureRust] -> [MarkView] ::mod(
+  rule="logical",
+  confidence=0.60,
+  description="Pure Rust implementation (iced/egui) could reduce binary to ~3MB but requires full rewrite"
+)

@@ -1,0 +1,49 @@
+:root, [data-theme='light'] {
+  --bg-color: #FFFFFF;
+  --text-color: #1A1A2E;
+  --sidebar-bg: #F5F5F5;
+  --code-bg: #F8F8F8;
+  --blockquote-border: #E0E0E0;
+  --link-color: #2563EB;
+  --border-color: #E5E7EB;
+  --hover-bg: #EAEAEA;
+  --base-font-size: 16px;
+  --tab-bar-bg: #E8E8E8;
+  --tab-bg: #E0E0E0;
+  --tab-hover: #D4D4D4;
+  --tab-active-border: #2563EB;
+}
+
+[data-theme='dark'] {
+  --bg-color: #1E1E2E;
+  --text-color: #CDD6F4;
+  --sidebar-bg: #181825;
+  --code-bg: #313244;
+  --blockquote-border: #45475A;
+  --link-color: #89B4FA;
+  --border-color: #313244;
+  --hover-bg: #45475A;
+  --tab-bar-bg: #11111B;
+  --tab-bg: #181825;
+  --tab-hover: #1E1E2E;
+  --tab-active-border: #89B4FA;
+}
+
+body {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  font-family: -apple-system, Segoe UI, system-ui, sans-serif;
+  font-size: var(--base-font-size);
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+/* Tab styles */
+.tab-active {
+  box-shadow: inset 0 -2px 0 var(--tab-active-border);
+}
+
+.tab-scroll-hide::-webkit-scrollbar {
+  display: none;
+}

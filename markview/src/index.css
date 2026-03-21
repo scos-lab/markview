@@ -1,0 +1,20 @@
+@import "tailwindcss";
+@import "./styles/themes.css";
+@import "./styles/markdown.css";
+@import "highlight.js/styles/github.css" layer(base);
+@import "katex/dist/katex.min.css" layer(base);
+
+[data-theme='dark'] {
+  /* Override highlight.js dark theme dynamically if needed */
+  /* This could be handled by swapping stylesheets, but for simplicity we rely on themes.css */
+}
+
+@media print {
+  body {
+    background-color: white !important;
+    color: black !important;
+  }
+  .no-print {
+    display: none !important;
+  }
+}
