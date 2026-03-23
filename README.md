@@ -2,6 +2,8 @@
 
 A clean, fast, lightweight Markdown reader for Windows.
 
+![MarkView Screenshot](docs/images/screenshot-main.png)
+
 ## Download
 
 | Version | Link |
