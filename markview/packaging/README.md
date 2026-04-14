@@ -5,7 +5,7 @@ Three artifacts:
 | Format | Where | Built by |
 |--------|-------|----------|
 | `.deb` + `.AppImage` | GitHub Releases, direct download | `npm run tauri build` (local) |
-| Snap | Snap Store (`snapcraft.io/markview`) | `snapcraft` reads `snap/snapcraft.yaml` |
+| Snap | Snap Store (`snapcraft.io/markview-reader`) | `snapcraft` reads `snap/snapcraft.yaml` |
 | Flatpak | Flathub (`flathub/io.github.scos-lab.MarkView`) | `flatpak-builder` reads `flatpak/io.github.scos-lab.MarkView.yml` |
 
 All three use the same AppStream metadata in
@@ -33,8 +33,8 @@ git push origin main vX.Y.Z
 1. Register an Ubuntu One account at <https://snapcraft.io/account>.
 2. Install snapcraft: `sudo snap install snapcraft --classic`.
 3. Log in: `snapcraft login`.
-4. Reserve the name: `snapcraft register markview` (must be done once, by
-   the publisher).
+4. Reserve the name: `snapcraft register markview-reader --yes` (must be
+   done once, by the publisher; `markview` alone was already taken).
 
 ### Each release
 ```bash

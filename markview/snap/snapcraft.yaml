@@ -1,4 +1,5 @@
-name: markview
+name: markview-reader
+title: MarkView
 base: core24
 version: '1.0.5'
 summary: AI-native Markdown reader with Mermaid, KaTeX, and Vega-Lite
