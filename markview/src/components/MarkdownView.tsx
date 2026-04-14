@@ -2,6 +2,8 @@ import { useEffect, useRef, useMemo } from 'react';
 import { open } from '@tauri-apps/plugin-shell';
 import { convertFileSrc } from '@tauri-apps/api/core';
 import { useAppStore } from '../stores/appStore';
+import { rerenderMermaidForTheme } from '../utils/mermaid';
+import { rerenderVegaForTheme } from '../utils/vega';
 
 function escapeRegex(s: string) {
   return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -11,6 +13,7 @@ export default function MarkdownView() {
   const renderedHTML = useAppStore((s) => s.renderedHTML);
   const searchQuery = useAppStore((s) => s.searchQuery);
   const currentMatch = useAppStore((s) => s.currentMatch);
+  const theme = useAppStore((s) => s.theme);
   const contentRef = useRef<HTMLDivElement>(null);
 
   // Compute highlighted HTML from string (no DOM manipulation)
@@ -111,6 +114,22 @@ export default function MarkdownView() {
       }
     });
   }, [displayHTML]);
+
+  // Render Mermaid + Vega diagrams on content or theme change. Both utils
+  // revert already-rendered wrappers (using stored source) then run a fresh
+  // render pass — same handler works for initial render and theme switch.
+  useEffect(() => {
+    const container = contentRef.current;
+    if (!container) return;
+    let cancelled = false;
+    rerenderMermaidForTheme(container, theme).catch((e) => {
+      if (!cancelled) console.error('Mermaid render failed', e);
+    });
+    rerenderVegaForTheme(container, theme).catch((e) => {
+      if (!cancelled) console.error('Vega render failed', e);
+    });
+    return () => { cancelled = true; };
+  }, [renderedHTML, theme]);
 
   return (
     <div className="p-8 max-w-4xl mx-auto pb-32">

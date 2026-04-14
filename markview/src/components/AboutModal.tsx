@@ -1,7 +1,10 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { X } from 'lucide-react';
 import { openUrl } from '@tauri-apps/plugin-opener';
 import { useAppStore } from '../stores/appStore';
+import { tauriCommands } from '../utils/tauriCommands';
+
+const isLinux = typeof navigator !== 'undefined' && /Linux/i.test(navigator.userAgent);
 
 interface AboutModalProps {
   onClose: () => void;
@@ -38,6 +41,20 @@ function countStats(raw: string) {
 export default function AboutModal({ onClose }: AboutModalProps) {
   const rawMarkdown = useAppStore((s) => s.rawMarkdown);
   const currentFile = useAppStore((s) => s.currentFile);
+  const [defaultStatus, setDefaultStatus] = useState<'idle' | 'working' | 'ok' | 'err'>('idle');
+  const [defaultErr, setDefaultErr] = useState<string | null>(null);
+
+  const handleSetDefault = async () => {
+    setDefaultStatus('working');
+    setDefaultErr(null);
+    try {
+      await tauriCommands.openDefaultAppsSettings();
+      setDefaultStatus('ok');
+    } catch (e) {
+      setDefaultStatus('err');
+      setDefaultErr(String(e));
+    }
+  };
 
   const stats = useMemo(() => countStats(rawMarkdown), [rawMarkdown]);
 
@@ -60,11 +77,27 @@ export default function AboutModal({ onClose }: AboutModalProps) {
         <div className="flex flex-col items-center text-center">
           <div className="text-3xl mb-2">M</div>
           <h2 className="text-lg font-bold mb-1">MarkView</h2>
-          <p className="text-xs text-gray-500 mb-4">Version 1.0.3</p>
+          <p className="text-xs text-gray-500 mb-4">Version 1.0.5</p>
 
           <p className="text-sm text-[var(--text-color)] mb-4 leading-relaxed">
-            The simplest Markdown viewer for Windows.
+            The simplest Markdown viewer.
           </p>
+
+          <button
+            onClick={handleSetDefault}
+            disabled={defaultStatus === 'working' || defaultStatus === 'ok'}
+            className="w-full px-4 py-2 mb-3 text-sm rounded-lg border border-[var(--border-color)] hover:bg-[var(--hover-bg)] transition-colors disabled:opacity-70"
+          >
+            {defaultStatus === 'working' ? 'Working…' :
+             defaultStatus === 'ok'     ? 'Set as default ✓' :
+             isLinux                    ? 'Set MarkView as default .md handler'
+                                        : 'Open Default Apps settings'}
+          </button>
+          {defaultStatus === 'err' && (
+            <p className="text-xs text-red-600 mb-3 break-words w-full text-left">
+              {defaultErr ?? 'Failed'}
+            </p>
+          )}
 
           {stats && currentFile && (
             <div className="w-full border-t border-[var(--border-color)] pt-4 mt-2 space-y-1.5 text-sm">

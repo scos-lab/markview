@@ -53,6 +53,12 @@ pub fn run() {
                     *state.path.lock().unwrap() = Some(path.clone());
                 }
             }
+            #[cfg(feature = "devtools")]
+            if std::env::var("MARKVIEW_DEVTOOLS").is_ok() {
+                if let Some(window) = app.get_webview_window("main") {
+                    window.open_devtools();
+                }
+            }
             Ok(())
         })
         .run(tauri::generate_context!())

@@ -43,7 +43,7 @@ const processor = unified()
     });
   })
   .use(remarkRehype, { allowDangerousHtml: true })
-  .use(rehypeHighlight)
+  .use(rehypeHighlight, { plainText: ['mermaid', 'vega-lite', 'vega'] })
   .use(rehypeKatex)
   .use(rehypeStringify, { allowDangerousHtml: true });
 

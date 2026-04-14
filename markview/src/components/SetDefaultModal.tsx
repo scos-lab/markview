@@ -6,16 +6,27 @@ interface SetDefaultModalProps {
   onClose: (dontShowAgain: boolean) => void;
 }
 
+const isLinux = typeof navigator !== 'undefined' && /Linux/i.test(navigator.userAgent);
+
 export default function SetDefaultModal({ onClose }: SetDefaultModalProps) {
   const [dontShow, setDontShow] = useState(false);
+  const [status, setStatus] = useState<'idle' | 'working' | 'ok' | 'err'>('idle');
+  const [errMsg, setErrMsg] = useState<string | null>(null);
 
-  const handleOpenSettings = async () => {
+  const handleAction = async () => {
+    setStatus('working');
     try {
       await tauriCommands.openDefaultAppsSettings();
+      if (isLinux) {
+        setStatus('ok');
+        setTimeout(() => onClose(true), 1200);
+      } else {
+        onClose(true);
+      }
     } catch (e) {
-      console.error('Failed to open settings', e);
+      setStatus('err');
+      setErrMsg(String(e));
     }
-    onClose(true);
   };
 
   return (
@@ -52,12 +63,21 @@ export default function SetDefaultModal({ onClose }: SetDefaultModalProps) {
               Not now
             </button>
             <button
-              onClick={handleOpenSettings}
-              className="flex-1 px-4 py-2 text-sm rounded-lg bg-[var(--link-color)] text-white hover:opacity-90 transition-opacity font-medium"
+              onClick={handleAction}
+              disabled={status === 'working' || status === 'ok'}
+              className="flex-1 px-4 py-2 text-sm rounded-lg bg-[var(--link-color)] text-white hover:opacity-90 transition-opacity font-medium disabled:opacity-70"
             >
-              Open Settings
+              {status === 'working' ? 'Working…' :
+               status === 'ok'     ? 'Done ✓' :
+               isLinux             ? 'Set as default' : 'Open Settings'}
             </button>
           </div>
+
+          {status === 'err' && (
+            <p className="text-xs text-red-600 mb-2 break-words">
+              {errMsg ?? 'Failed to set default'}
+            </p>
+          )}
 
           <label className="flex items-center gap-2 text-xs text-gray-500 cursor-pointer">
             <input

@@ -1993,7 +1993,7 @@ dependencies = [
 
 [[package]]
 name = "markview"
-version = "1.0.3"
+version = "1.0.5"
 dependencies = [
  "notify",
  "serde",

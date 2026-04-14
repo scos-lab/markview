@@ -1,6 +1,6 @@
 [package]
 name = "markview"
-version = "1.0.3"
+version = "1.0.5"
 description = "A Tauri App"
 authors = ["you"]
 edition = "2021"
@@ -17,8 +17,14 @@ crate-type = ["staticlib", "cdylib", "rlib"]
 [build-dependencies]
 tauri-build = { version = "2", features = [] }
 
+[features]
+# enabled by `tauri build` for production; disabled by `tauri dev` so the
+# devUrl is used. Without this, release builds also try to load devUrl.
+default = ["custom-protocol"]
+custom-protocol = ["tauri/custom-protocol"]
+
 [dependencies]
-tauri = { version = "2", features = [] }
+tauri = { version = "2", features = ["devtools"] }
 tauri-plugin-opener = "2"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"

@@ -1,7 +1,7 @@
 {
   "name": "markview",
   "private": true,
-  "version": "1.0.3",
+  "version": "1.0.5",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -20,6 +20,7 @@
     "highlight.js": "^11.11.1",
     "katex": "^0.16.33",
     "lucide-react": "^0.575.0",
+    "mermaid": "^11.14.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "rehype-highlight": "^7.0.2",
@@ -31,6 +32,7 @@
     "remark-rehype": "^11.1.2",
     "tailwindcss": "^4.2.1",
     "unified": "^11.0.5",
+    "vega-embed": "^7.1.0",
     "zustand": "^5.0.11"
   },
   "devDependencies": {

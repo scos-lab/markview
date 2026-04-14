@@ -130,6 +130,41 @@
   border: 0;
 }
 
+.markdown-body .mermaid-diagram {
+  display: flex;
+  justify-content: center;
+  margin: 16px 0;
+  overflow-x: auto;
+}
+
+.markdown-body .mermaid-diagram svg {
+  max-width: 100%;
+  height: auto;
+}
+
+.markdown-body .mermaid-error,
+.markdown-body .vega-error {
+  color: #c00;
+  background: rgba(192, 0, 0, 0.06);
+  border: 1px solid rgba(192, 0, 0, 0.2);
+  padding: 12px;
+  border-radius: 4px;
+  white-space: pre-wrap;
+  font-size: 0.9em;
+}
+
+.markdown-body .vega-chart {
+  display: flex;
+  justify-content: center;
+  margin: 16px 0;
+  overflow-x: auto;
+}
+
+.markdown-body .vega-chart svg {
+  max-width: 100%;
+  height: auto;
+}
+
 .search-highlight {
   background-color: rgba(255, 255, 0, 0.4);
   color: inherit;
