@@ -1,0 +1,90 @@
+app-id: io.github.scos-lab.MarkView
+runtime: org.gnome.Platform
+runtime-version: '47'
+sdk: org.gnome.Sdk
+sdk-extensions:
+  - org.freedesktop.Sdk.Extension.rust-stable
+  - org.freedesktop.Sdk.Extension.node22
+
+command: markview
+
+finish-args:
+  # Display + input
+  - --socket=wayland
+  - --socket=fallback-x11
+  - --share=ipc
+  - --device=dri
+  # File access — read any .md the user opens; persistent settings under
+  # ~/.config/markview
+  - --filesystem=home:ro
+  - --filesystem=xdg-documents
+  - --filesystem=xdg-download
+  - --filesystem=xdg-desktop
+  - --persist=.local/share/markview
+  - --persist=.config/markview
+  # Mermaid/Vega may emit links; allow opening external browser
+  - --talk-name=org.freedesktop.Flatpak
+  - --share=network  # needed during first-run Vega schema validation only
+  # WebKitGTK
+  - --system-talk-name=org.freedesktop.NetworkManager
+  - --env=GDK_GL=gles
+  - --env=WEBKIT_DISABLE_COMPOSITING_MODE=0
+
+build-options:
+  append-path: /usr/lib/sdk/rust-stable/bin:/usr/lib/sdk/node22/bin
+  env:
+    CARGO_HOME: /run/build/markview/cargo
+    npm_config_cache: /run/build/markview/npm-cache
+
+modules:
+  - name: markview
+    buildsystem: simple
+    sources:
+      # When submitted to Flathub, replace with tagged release tarball
+      # + cargo-sources.json generated via `flatpak-cargo-generator.py`
+      # + npm-lockfile-generator for offline npm install.
+      - type: git
+        url: https://github.com/scos-lab/markview.git
+        tag: v1.0.5
+        # commit: <pinned-commit-sha>   # required by Flathub reviewer
+
+      # Placeholder for generated offline-build sources. Produce locally via:
+      #   flatpak-cargo-generator.py src-tauri/Cargo.lock -o cargo-sources.json
+      #   flatpak-node-generator.py npm package-lock.json -o node-sources.json
+      # then add both below:
+      # - cargo-sources.json
+      # - node-sources.json
+
+    build-commands:
+      # Build frontend
+      - npm ci --offline --cache=$npm_config_cache || npm ci
+      - npm run build
+
+      # Build Tauri binary
+      - cd src-tauri && cargo build --release --offline || cargo build --release
+
+      # Install binary
+      - install -Dm755 src-tauri/target/release/markview /app/bin/markview
+
+      # Install .desktop + icon + metainfo under the reverse-DNS ID
+      - install -Dm644 packaging/io.github.scos-lab.MarkView.metainfo.xml /app/share/metainfo/io.github.scos-lab.MarkView.metainfo.xml
+      - install -Dm644 src-tauri/icons/32x32.png      /app/share/icons/hicolor/32x32/apps/io.github.scos-lab.MarkView.png
+      - install -Dm644 src-tauri/icons/128x128.png    /app/share/icons/hicolor/128x128/apps/io.github.scos-lab.MarkView.png
+      - install -Dm644 src-tauri/icons/128x128@2x.png /app/share/icons/hicolor/256x256/apps/io.github.scos-lab.MarkView.png
+
+      # Generate .desktop file
+      - |
+        cat > /app/share/applications/io.github.scos-lab.MarkView.desktop <<EOF
+        [Desktop Entry]
+        Type=Application
+        Name=MarkView
+        GenericName=Markdown Reader
+        Comment=AI-native Markdown reader with Mermaid, KaTeX, and Vega-Lite
+        Exec=markview %f
+        Icon=io.github.scos-lab.MarkView
+        Terminal=false
+        Categories=Office;TextEditor;Viewer;
+        MimeType=text/markdown;text/x-markdown;
+        StartupWMClass=markview
+        StartupNotify=true
+        EOF

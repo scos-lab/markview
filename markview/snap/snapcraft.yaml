@@ -1,0 +1,107 @@
+name: markview
+base: core24
+version: '1.0.5'
+summary: AI-native Markdown reader with Mermaid, KaTeX, and Vega-Lite
+description: |
+  MarkView renders Markdown the way modern LLMs produce it — diagrams,
+  equations, and data visualisations as first-class citizens.
+
+  Supported out of the box:
+    • Mermaid flowcharts / sequence / state / gantt / class / ERD / pie /
+      mindmap / timeline / journey
+    • KaTeX inline + block math, matrices, integrals
+    • Vega-Lite bar / line / scatter / heatmap / candlestick / stacked area
+    • GFM tables, task lists, footnotes, strikethrough
+    • Syntax highlighting for 100+ languages (highlight.js)
+
+  Binds itself as the default .md handler on first run.
+
+grade: stable
+confinement: strict
+license: MIT
+icon: src-tauri/icons/128x128.png
+source-code: https://github.com/scos-lab/markview
+issues: https://github.com/scos-lab/markview/issues
+contact: https://github.com/scos-lab/markview/issues
+
+# Use KDE neon extension for Qt/WebEngine? No — we use GNOME (GTK + WebKit2).
+# `gnome` extension pulls GTK3, WebKit2GTK, and related deps; plays nicely
+# with Tauri 2 which targets webkit2gtk-4.1.
+apps:
+  markview:
+    command: usr/bin/markview
+    desktop: usr/share/applications/io.github.scos-lab.MarkView.desktop
+    extensions: [gnome]
+    plugs:
+      - home
+      - removable-media
+      - network
+      - desktop
+      - desktop-legacy
+      - wayland
+      - x11
+      - opengl
+      - unity7
+      - browser-support
+    common-id: io.github.scos-lab.MarkView
+
+parts:
+  markview:
+    plugin: nil
+    source: .
+    build-packages:
+      - build-essential
+      - curl
+      - wget
+      - libssl-dev
+      - libgtk-3-dev
+      - libayatana-appindicator3-dev
+      - librsvg2-dev
+      - libwebkit2gtk-4.1-dev
+      - libsoup-3.0-dev
+      - file
+    stage-packages:
+      - libwebkit2gtk-4.1-0
+      - libayatana-appindicator3-1
+      - librsvg2-2
+      - libgtk-3-0t64
+    override-build: |
+      set -eux
+      # Install Node.js 22 and Rust on the fly (no snapcraft plugin covers
+      # both cleanly for Tauri 2)
+      curl -fsSL https://deb.nodesource.com/setup_22.x | bash -
+      apt-get install -y nodejs
+      curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | \
+        sh -s -- -y --default-toolchain stable --profile minimal
+      export PATH="$HOME/.cargo/bin:$PATH"
+
+      # Build frontend and Tauri binary
+      npm ci
+      npm run tauri build -- --bundles deb
+
+      # Unpack the generated .deb so Snap can stage its contents
+      DEB=$(ls src-tauri/target/release/bundle/deb/*.deb | head -1)
+      dpkg-deb -x "$DEB" "$CRAFT_PART_INSTALL"
+
+      # Rename desktop file + metainfo to the reverse-DNS Flathub-style ID
+      # so the same ID works across Snap and Flathub
+      OLD_ID="MarkView - Markdown Reader"
+      NEW_ID="io.github.scos-lab.MarkView"
+      if [ -f "$CRAFT_PART_INSTALL/usr/share/applications/${OLD_ID}.desktop" ]; then
+        mv "$CRAFT_PART_INSTALL/usr/share/applications/${OLD_ID}.desktop" \
+           "$CRAFT_PART_INSTALL/usr/share/applications/${NEW_ID}.desktop"
+        # Adjust Exec= and Icon= if they point to the old name
+        sed -i "s/^Icon=.*/Icon=${NEW_ID}/" \
+           "$CRAFT_PART_INSTALL/usr/share/applications/${NEW_ID}.desktop"
+      fi
+
+      # Install AppStream metainfo
+      install -Dm644 packaging/io.github.scos-lab.MarkView.metainfo.xml \
+        "$CRAFT_PART_INSTALL/usr/share/metainfo/${NEW_ID}.metainfo.xml"
+
+      # Copy icon under the expected Snap/Flatpak name
+      install -Dm644 src-tauri/icons/128x128.png \
+        "$CRAFT_PART_INSTALL/usr/share/icons/hicolor/128x128/apps/${NEW_ID}.png"
+    organize:
+      # Tauri deb installs binary at /usr/bin/markview; keep that path
+      # since `command:` above references it.

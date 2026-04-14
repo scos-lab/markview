@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>io.github.scos-lab.MarkView</id>
+
+  <name>MarkView</name>
+  <summary>AI-native Markdown reader with charts and math</summary>
+
+  <developer id="io.github.scos-lab">
+    <name>scos-lab</name>
+  </developer>
+
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>MIT</project_license>
+
+  <description>
+    <p>
+      MarkView renders Markdown the way modern LLMs produce it. Diagrams,
+      equations, and data visualisations are first-class citizens, not
+      afterthoughts.
+    </p>
+    <p>Supported natively:</p>
+    <ul>
+      <li>Mermaid — flowcharts, sequence, state, gantt, class, ERD, pie, mindmap, timeline, journey</li>
+      <li>KaTeX — inline and block math, matrices, integrals, series</li>
+      <li>Vega-Lite — bar, line, scatter, heatmap, candlestick, stacked area</li>
+      <li>GitHub-flavored Markdown — tables, task lists, footnotes, strikethrough</li>
+      <li>Syntax highlighting for 100+ languages via highlight.js</li>
+    </ul>
+    <p>
+      Fast (cold start under 200 ms on SSD), lightweight (system WebKit, no
+      Electron), and designed to be the default .md handler on your desktop.
+    </p>
+  </description>
+
+  <launchable type="desktop-id">io.github.scos-lab.MarkView.desktop</launchable>
+
+  <url type="homepage">https://github.com/scos-lab/markview</url>
+  <url type="bugtracker">https://github.com/scos-lab/markview/issues</url>
+  <url type="vcs-browser">https://github.com/scos-lab/markview</url>
+
+  <categories>
+    <category>Office</category>
+    <category>Viewer</category>
+    <category>TextEditor</category>
+  </categories>
+
+  <keywords>
+    <keyword>markdown</keyword>
+    <keyword>md</keyword>
+    <keyword>mermaid</keyword>
+    <keyword>katex</keyword>
+    <keyword>reader</keyword>
+    <keyword>viewer</keyword>
+    <keyword>AI</keyword>
+    <keyword>documentation</keyword>
+  </keywords>
+
+  <provides>
+    <mediatype>text/markdown</mediatype>
+    <mediatype>text/x-markdown</mediatype>
+  </provides>
+
+  <supports>
+    <control>pointing</control>
+    <control>keyboard</control>
+    <control>touch</control>
+  </supports>
+
+  <content_rating type="oars-1.1" />
+
+  <screenshots>
+    <screenshot type="default">
+      <caption>Vega-Lite data charts including candlestick and heatmap</caption>
+      <image>https://raw.githubusercontent.com/scos-lab/markview/main/docs/images/screenshot-1.png</image>
+    </screenshot>
+    <screenshot>
+      <caption>Mermaid flowchart and sequence diagrams</caption>
+      <image>https://raw.githubusercontent.com/scos-lab/markview/main/docs/images/screenshot-2.png</image>
+    </screenshot>
+    <screenshot>
+      <caption>KaTeX math typesetting with matrices and integrals</caption>
+      <image>https://raw.githubusercontent.com/scos-lab/markview/main/docs/images/screenshot-3.png</image>
+    </screenshot>
+    <screenshot>
+      <caption>GitHub-flavored Markdown tables and task lists</caption>
+      <image>https://raw.githubusercontent.com/scos-lab/markview/main/docs/images/screenshot-4.png</image>
+    </screenshot>
+    <screenshot>
+      <caption>Syntax-highlighted code blocks across 100+ languages</caption>
+      <image>https://raw.githubusercontent.com/scos-lab/markview/main/docs/images/screenshot-5.png</image>
+    </screenshot>
+    <screenshot>
+      <caption>Mermaid gantt, class, and ER diagrams</caption>
+      <image>https://raw.githubusercontent.com/scos-lab/markview/main/docs/images/screenshot-6.png</image>
+    </screenshot>
+  </screenshots>
+
+  <releases>
+    <release version="1.0.5" date="2026-04-14">
+      <description>
+        <p>First release with AI-native chart rendering:</p>
+        <ul>
+          <li>Mermaid 11 diagrams (lazy-loaded, theme-aware)</li>
+          <li>Vega-Lite 5 data visualisations</li>
+          <li>Linux default-handler binding via xdg-mime</li>
+          <li>Fixed cold-launch render race for file-association opens</li>
+          <li>CSS containment reduces scroll CPU on chart-heavy documents</li>
+        </ul>
+      </description>
+    </release>
+  </releases>
+</component>
