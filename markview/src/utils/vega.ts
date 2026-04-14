@@ -21,23 +21,39 @@ function vegaThemeFor(theme: 'light' | 'dark') {
 /**
  * Scan container for <code class="language-vega-lite"> and <code class="language-vega">.
  * Replace parent <pre> with an SVG rendering of the spec. Skips already-rendered
- * blocks via data-vega-rendered.
+ * blocks via data-vega-rendered. `isCancelled` aborts between async steps so a
+ * later effect run can supersede an in-flight one without partial DOM damage.
  */
 export async function renderVegaBlocks(
   container: HTMLElement,
   theme: 'light' | 'dark',
+  isCancelled: () => boolean = () => false,
 ): Promise<void> {
-  const blocks = container.querySelectorAll<HTMLElement>(
+  if (isCancelled()) return;
+  const initial = container.querySelectorAll<HTMLElement>(
     'code.language-vega-lite:not([data-vega-rendered]), code.language-vega:not([data-vega-rendered])',
   );
-  if (blocks.length === 0) return;
+  if (initial.length === 0) return;
 
   const embed = await getEmbed();
+  if (isCancelled()) return;
 
-  for (const codeEl of Array.from(blocks)) {
+  // Re-query after the await; mark each block to keep concurrent runs from
+  // racing on the same <pre>.
+  const blocks = Array.from(
+    container.querySelectorAll<HTMLElement>(
+      'code.language-vega-lite:not([data-vega-rendered]):not([data-vega-claimed]), code.language-vega:not([data-vega-rendered]):not([data-vega-claimed])',
+    ),
+  );
+  blocks.forEach((b) => b.setAttribute('data-vega-claimed', '1'));
+
+  for (const codeEl of blocks) {
+    if (isCancelled()) return;
+    if (!codeEl.isConnected) continue;
     const source = codeEl.textContent ?? '';
     const pre = codeEl.closest('pre');
     const host = pre ?? codeEl;
+    if (!host.isConnected) continue;
     const mode = codeEl.classList.contains('language-vega') ? 'vega' : 'vega-lite';
 
     let spec: unknown;
@@ -62,7 +78,9 @@ export async function renderVegaBlocks(
         renderer: 'svg',
         theme: vegaThemeFor(theme),
       });
+      if (isCancelled() || !wrapper.isConnected) continue;
     } catch (err) {
+      if (isCancelled() || !wrapper.isConnected) continue;
       renderError(wrapper, source, (err as Error).message);
     }
   }
@@ -84,7 +102,9 @@ function renderError(host: Element, source: string, msg: string) {
 export function rerenderVegaForTheme(
   container: HTMLElement,
   theme: 'light' | 'dark',
+  isCancelled: () => boolean = () => false,
 ): Promise<void> {
+  if (isCancelled()) return Promise.resolve();
   container
     .querySelectorAll<HTMLElement>('.vega-chart[data-vega-source]')
     .forEach((wrapper) => {
@@ -97,5 +117,5 @@ export function rerenderVegaForTheme(
       pre.appendChild(code);
       wrapper.replaceWith(pre);
     });
-  return renderVegaBlocks(container, theme);
+  return renderVegaBlocks(container, theme, isCancelled);
 }

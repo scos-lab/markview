@@ -38,26 +38,47 @@ async function getMermaid(theme: 'light' | 'dark'): Promise<MermaidModule> {
  * Scan the container for <code class="language-mermaid"> blocks and replace
  * their parent <pre> with rendered SVG. Safe to call multiple times —
  * already-rendered blocks are skipped via a data-rendered marker.
+ *
+ * `isCancelled` lets the caller abort between async steps. Each <pre> is
+ * also re-checked just before replacement, so two concurrent renders for
+ * the same block can't both write SVG.
  */
 export async function renderMermaidBlocks(
   container: HTMLElement,
   theme: 'light' | 'dark',
+  isCancelled: () => boolean = () => false,
 ): Promise<void> {
-  const codeBlocks = container.querySelectorAll<HTMLElement>(
+  if (isCancelled()) return;
+  const initial = container.querySelectorAll<HTMLElement>(
     'code.language-mermaid:not([data-mermaid-rendered])',
   );
-  if (codeBlocks.length === 0) return;
+  if (initial.length === 0) return;
 
   const mermaid = await getMermaid(theme);
+  if (isCancelled()) return;
 
-  for (const codeEl of Array.from(codeBlocks)) {
+  // Re-query — the DOM may have changed during the await above (theme switch,
+  // re-render, etc.). Mark each block we plan to handle so a parallel pass
+  // skips it.
+  const blocks = Array.from(
+    container.querySelectorAll<HTMLElement>(
+      'code.language-mermaid:not([data-mermaid-rendered]):not([data-mermaid-claimed])',
+    ),
+  );
+  blocks.forEach((b) => b.setAttribute('data-mermaid-claimed', '1'));
+
+  for (const codeEl of blocks) {
+    if (isCancelled()) return;
+    if (!codeEl.isConnected) continue; // detached during a re-render
     const source = codeEl.textContent ?? '';
     const pre = codeEl.closest('pre');
     const host = pre ?? codeEl;
+    if (!host.isConnected) continue;
     const id = `mermaid-${Date.now()}-${++renderCounter}`;
 
     try {
       const { svg, bindFunctions } = await mermaid.render(id, source);
+      if (isCancelled() || !host.isConnected) continue;
       const wrapper = document.createElement('div');
       wrapper.className = 'mermaid-diagram';
       wrapper.setAttribute('data-mermaid-rendered', '1');
@@ -66,6 +87,7 @@ export async function renderMermaidBlocks(
       host.replaceWith(wrapper);
       if (bindFunctions) bindFunctions(wrapper);
     } catch (err) {
+      if (isCancelled() || !host.isConnected) continue;
       const msg = err instanceof Error ? err.message : String(err);
       const errEl = document.createElement('pre');
       errEl.className = 'mermaid-error';
@@ -84,7 +106,9 @@ export async function renderMermaidBlocks(
 export function rerenderMermaidForTheme(
   container: HTMLElement,
   theme: 'light' | 'dark',
+  isCancelled: () => boolean = () => false,
 ): Promise<void> {
+  if (isCancelled()) return Promise.resolve();
   container
     .querySelectorAll<HTMLElement>('.mermaid-diagram[data-mermaid-source]')
     .forEach((wrapper) => {
@@ -96,5 +120,5 @@ export function rerenderMermaidForTheme(
       pre.appendChild(code);
       wrapper.replaceWith(pre);
     });
-  return renderMermaidBlocks(container, theme);
+  return renderMermaidBlocks(container, theme, isCancelled);
 }

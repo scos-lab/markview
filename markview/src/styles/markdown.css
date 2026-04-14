@@ -135,6 +135,12 @@
   justify-content: center;
   margin: 16px 0;
   overflow-x: auto;
+  /* Tell WebKit this block is an independent paint/layout unit so scrolling
+     outside it doesn't trigger restyle of the heavy SVG inside. */
+  contain: layout style paint;
+  /* Promote to its own compositing layer — scroll then becomes a GPU blit
+     instead of a full SVG repaint. */
+  will-change: transform;
 }
 
 .markdown-body .mermaid-diagram svg {
@@ -158,6 +164,10 @@
   justify-content: center;
   margin: 16px 0;
   overflow-x: auto;
+  /* Same containment trick — Vega-Lite charts can be even denser SVG than
+     Mermaid (heatmaps, scatter regressions). Isolate them. */
+  contain: layout style paint;
+  will-change: transform;
 }
 
 .markdown-body .vega-chart svg {

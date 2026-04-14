@@ -115,17 +115,19 @@ export default function MarkdownView() {
     });
   }, [displayHTML]);
 
-  // Render Mermaid + Vega diagrams on content or theme change. Both utils
-  // revert already-rendered wrappers (using stored source) then run a fresh
-  // render pass — same handler works for initial render and theme switch.
+  // Render Mermaid + Vega diagrams on content or theme change. The cancelled
+  // flag is checked inside the renderers between async steps so a re-render
+  // (e.g. theme load completing right after content load on cold launch)
+  // can supersede an in-flight render without leaving half-rendered DOM.
   useEffect(() => {
     const container = contentRef.current;
     if (!container) return;
     let cancelled = false;
-    rerenderMermaidForTheme(container, theme).catch((e) => {
+    const isCancelled = () => cancelled;
+    rerenderMermaidForTheme(container, theme, isCancelled).catch((e) => {
       if (!cancelled) console.error('Mermaid render failed', e);
     });
-    rerenderVegaForTheme(container, theme).catch((e) => {
+    rerenderVegaForTheme(container, theme, isCancelled).catch((e) => {
       if (!cancelled) console.error('Vega render failed', e);
     });
     return () => { cancelled = true; };
