@@ -4,7 +4,17 @@ An AI-native Markdown reader for Windows and Linux — renders Mermaid
 diagrams, KaTeX math, Vega-Lite charts, and GFM tables the way modern
 LLMs produce them.
 
-![MarkView Screenshot](markview/docs/images/screenshot-1.png)
+![MarkView — AI-Native Markdown Reader](markview/docs/images/screenshot-3.png)
+
+### Gallery
+
+| Data charts (Vega-Lite) | Diagrams (Mermaid) |
+|---|---|
+| ![Charts](markview/docs/images/screenshot-1.png) | ![Diagrams](markview/docs/images/screenshot-6.png) |
+
+| Math + tables | Release notes view |
+|---|---|
+| ![KaTeX and tables](markview/docs/images/screenshot-2.png) | ![Syntax highlighting](markview/docs/images/screenshot-4.png) |
 
 ## Download
 
