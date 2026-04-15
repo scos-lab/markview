@@ -20,8 +20,8 @@ description: |
     • Chinese / English word counts tracked separately
     • Light and dark themes, search, and adjustable font size
 
-  Made for people who paste Markdown from AI chats, download
-  README.md from GitHub, or keep their notes in plain .md files.
+  Made for anyone who reads a lot of Markdown — files generated
+  by AI agents, docs downloaded from GitHub, or your own notes.
   No cloud, no account, no tracking — just open and read.
 
 grade: stable
