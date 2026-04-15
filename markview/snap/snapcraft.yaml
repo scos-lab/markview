@@ -2,20 +2,27 @@ name: markview-reader
 title: MarkView
 base: core24
 version: '1.0.5'
-summary: AI-native Markdown reader with Mermaid, KaTeX, and Vega-Lite
+summary: Open AI-generated Markdown files with diagrams and formulas rendered
 description: |
-  MarkView renders Markdown the way modern LLMs produce it — diagrams,
-  equations, and data visualisations as first-class citizens.
+  MarkView is the fastest way to read Markdown files — especially the
+  ones ChatGPT, Claude, and other AI tools output every day.
 
-  Supported out of the box:
-    • Mermaid flowcharts / sequence / state / gantt / class / ERD / pie /
-      mindmap / timeline / journey
-    • KaTeX inline + block math, matrices, integrals
-    • Vega-Lite bar / line / scatter / heatmap / candlestick / stacked area
-    • GFM tables, task lists, footnotes, strikethrough
-    • Syntax highlighting for 100+ languages (highlight.js)
+  Open a .md file and everything just works:
+    • Flowcharts, sequence diagrams, and mindmaps show up as real pictures
+    • Math formulas render beautifully (great for physics, ML, and papers)
+    • Data charts (bar, line, scatter, heatmaps) appear as actual charts
+    • Tables, task lists, and 100+ code languages all styled correctly
 
-  Binds itself as the default .md handler on first run.
+  Handy extras:
+    • One-click "set as default .md opener" so your files open instantly
+    • Built-in document stats: words, characters, lines, and AI token
+      estimate — useful when you're prepping prompts or checking length
+    • Chinese / English word counts tracked separately
+    • Light and dark themes, search, and adjustable font size
+
+  Made for people who paste Markdown from AI chats, download
+  README.md from GitHub, or keep their notes in plain .md files.
+  No cloud, no account, no tracking — just open and read.
 
 grade: stable
 confinement: strict
