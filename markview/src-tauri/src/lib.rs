@@ -11,11 +11,18 @@ fn is_markdown(path: &str) -> bool {
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    tauri::Builder::default()
+    let mut builder = tauri::Builder::default()
         .manage(commands::WatcherState {
             watcher: Mutex::new(None),
-        })
-        .plugin(tauri_plugin_single_instance::init(|app, argv, _cwd| {
+        });
+
+    // tauri_plugin_single_instance uses zbus to register a well-known DBus
+    // name derived from the app identifier. Under Snap strict confinement
+    // the app can only own names matching the snap ID, so registration
+    // panics. Snap already enforces single-instance via its own namespace,
+    // so skip the plugin when running inside a snap.
+    if std::env::var("SNAP").is_err() {
+        builder = builder.plugin(tauri_plugin_single_instance::init(|app, argv, _cwd| {
             // Second instance launched — find the .md path and send it to the existing window
             if let Some(path) = argv.iter().skip(1).find(|a| is_markdown(a)) {
                 let _ = app.emit("file-association-open", path.clone());
@@ -25,7 +32,10 @@ pub fn run() {
                 let _ = window.unminimize();
                 let _ = window.set_focus();
             }
-        }))
+        }));
+    }
+
+    builder
         .plugin(tauri_plugin_store::Builder::new().build())
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_fs::init())

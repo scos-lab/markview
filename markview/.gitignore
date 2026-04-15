@@ -12,6 +12,9 @@ dist
 dist-ssr
 *.local
 
+# Snap build artifacts
+*.snap
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

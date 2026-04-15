@@ -29,7 +29,7 @@ contact: https://github.com/scos-lab/markview/issues
 # `gnome` extension pulls GTK3, WebKit2GTK, and related deps; plays nicely
 # with Tauri 2 which targets webkit2gtk-4.1.
 apps:
-  markview:
+  markview-reader:
     command: usr/bin/markview
     desktop: usr/share/applications/io.github.scos-lab.MarkView.desktop
     extensions: [gnome]
@@ -37,14 +37,16 @@ apps:
       - home
       - removable-media
       - network
-      - desktop
-      - desktop-legacy
-      - wayland
-      - x11
-      - opengl
-      - unity7
       - browser-support
     common-id: io.github.scos-lab.MarkView
+    environment:
+      # WebKit2GTK tries to nest its own bubblewrap sandbox inside snap
+      # confinement and fails. Disable WebKit's sandbox — snap already
+      # provides isolation. Also force software rendering fallbacks where
+      # DMABUF is rejected by the snap GPU interface.
+      WEBKIT_DISABLE_SANDBOX_THIS_IS_DANGEROUS: "1"
+      WEBKIT_DISABLE_DMABUF_RENDERER: "1"
+      WEBKIT_DISABLE_COMPOSITING_MODE: "1"
 
 parts:
   markview:
@@ -62,10 +64,13 @@ parts:
       - libsoup-3.0-dev
       - file
     stage-packages:
+      # webkit2gtk-4.1 is NOT in the gnome extension (which ships webkit6);
+      # Tauri 2 on Linux links against webkit2gtk-4.1, so we stage it.
       - libwebkit2gtk-4.1-0
+      - libsoup-3.0-0
       - libayatana-appindicator3-1
-      - librsvg2-2
-      - libgtk-3-0t64
+      # Do NOT stage librsvg2-2, libgtk-3, libglib — the gnome extension
+      # provides them; staging conflicts caused libpixbufloader_svg crash.
     override-build: |
       set -eux
       # Install Node.js 22 and Rust on the fly (no snapcraft plugin covers
@@ -81,7 +86,7 @@ parts:
       npm run tauri build -- --bundles deb
 
       # Unpack the generated .deb so Snap can stage its contents
-      DEB=$(ls src-tauri/target/release/bundle/deb/*.deb | head -1)
+      DEB=$(ls src-tauri/target/release/bundle/deb/*.deb | sort -V | tail -1)
       dpkg-deb -x "$DEB" "$CRAFT_PART_INSTALL"
 
       # Rename desktop file + metainfo to the reverse-DNS Flathub-style ID
@@ -103,6 +108,3 @@ parts:
       # Copy icon under the expected Snap/Flatpak name
       install -Dm644 src-tauri/icons/128x128.png \
         "$CRAFT_PART_INSTALL/usr/share/icons/hicolor/128x128/apps/${NEW_ID}.png"
-    organize:
-      # Tauri deb installs binary at /usr/bin/markview; keep that path
-      # since `command:` above references it.
