@@ -27,7 +27,7 @@ description: |
 grade: stable
 confinement: strict
 license: MIT
-icon: src-tauri/icons/128x128.png
+icon: src-tauri/icons/icon.png
 source-code: https://github.com/scos-lab/markview
 issues: https://github.com/scos-lab/markview/issues
 contact: https://github.com/scos-lab/markview/issues
