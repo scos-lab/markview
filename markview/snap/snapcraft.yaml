@@ -112,6 +112,11 @@ parts:
       install -Dm644 packaging/io.github.scos-lab.MarkView.metainfo.xml \
         "$CRAFT_PART_INSTALL/usr/share/metainfo/${NEW_ID}.metainfo.xml"
 
-      # Copy icon under the expected Snap/Flatpak name
+      # Install icons at multiple hicolor sizes so AppStream / Snap Store
+      # pick the largest. Snap Store treats icons under 256x256 as missing.
       install -Dm644 src-tauri/icons/128x128.png \
         "$CRAFT_PART_INSTALL/usr/share/icons/hicolor/128x128/apps/${NEW_ID}.png"
+      install -Dm644 src-tauri/icons/128x128@2x.png \
+        "$CRAFT_PART_INSTALL/usr/share/icons/hicolor/256x256/apps/${NEW_ID}.png"
+      install -Dm644 src-tauri/icons/icon.png \
+        "$CRAFT_PART_INSTALL/usr/share/icons/hicolor/512x512/apps/${NEW_ID}.png"
