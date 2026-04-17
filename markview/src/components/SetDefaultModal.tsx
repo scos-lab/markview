@@ -6,8 +6,6 @@ interface SetDefaultModalProps {
   onClose: (dontShowAgain: boolean) => void;
 }
 
-const isLinux = typeof navigator !== 'undefined' && /Linux/i.test(navigator.userAgent);
-
 export default function SetDefaultModal({ onClose }: SetDefaultModalProps) {
   const [dontShow, setDontShow] = useState(false);
   const [status, setStatus] = useState<'idle' | 'working' | 'ok' | 'err'>('idle');
@@ -17,12 +15,8 @@ export default function SetDefaultModal({ onClose }: SetDefaultModalProps) {
     setStatus('working');
     try {
       await tauriCommands.openDefaultAppsSettings();
-      if (isLinux) {
-        setStatus('ok');
-        setTimeout(() => onClose(true), 1200);
-      } else {
-        onClose(true);
-      }
+      setStatus('ok');
+      setTimeout(() => onClose(true), 1200);
     } catch (e) {
       setStatus('err');
       setErrMsg(String(e));
@@ -69,7 +63,7 @@ export default function SetDefaultModal({ onClose }: SetDefaultModalProps) {
             >
               {status === 'working' ? 'Working…' :
                status === 'ok'     ? 'Done ✓' :
-               isLinux             ? 'Set as default' : 'Open Settings'}
+               'Set as default'}
             </button>
           </div>
 

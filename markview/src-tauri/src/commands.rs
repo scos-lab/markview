@@ -89,11 +89,7 @@ pub async fn get_initial_file(state: State<'_, InitialFileState>) -> Result<Opti
 pub fn open_default_apps_settings() -> Result<(), String> {
     #[cfg(target_os = "windows")]
     {
-        std::process::Command::new("cmd")
-            .args(["/c", "start", "ms-settings:defaultapps"])
-            .spawn()
-            .map_err(|e| e.to_string())?;
-        return Ok(());
+        return set_default_windows();
     }
     #[cfg(target_os = "linux")]
     {
@@ -115,6 +111,154 @@ pub fn open_default_apps_settings() -> Result<(), String> {
     }
     #[cfg(not(any(target_os = "windows", target_os = "linux")))]
     Err("Setting default app is not supported on this platform yet".into())
+}
+
+/// Register MarkView as the default handler for .md/.mdx/.markdown on Windows.
+///
+/// Writes to HKCU (no admin required):
+/// 1. ProgID with shell\open\command pointing to current exe
+/// 2. OpenWithProgids entries so MarkView appears in "Open With"
+/// 3. RegisteredApplications + Capabilities for Windows Settings integration
+/// 4. Notifies the shell so Explorer picks up the change immediately
+#[cfg(target_os = "windows")]
+fn set_default_windows() -> Result<(), String> {
+    use winreg::enums::*;
+    use winreg::RegKey;
+
+    let exe = std::env::current_exe()
+        .map_err(|e| format!("current_exe: {e}"))?;
+    let exe_str = exe.to_string_lossy().to_string();
+    let open_cmd = format!("\"{}\" \"%1\"", exe_str);
+    let prog_id = "MarkView.Markdown";
+    let extensions = [".md", ".mdx", ".markdown"];
+
+    let hkcu = RegKey::predef(HKEY_CURRENT_USER);
+
+    // 1. Create ProgID: HKCU\Software\Classes\MarkView.Markdown
+    let (prog_key, _) = hkcu
+        .create_subkey(format!("Software\\Classes\\{}", prog_id))
+        .map_err(|e| format!("create ProgID: {e}"))?;
+    prog_key.set_value("", &"Markdown Document").map_err(|e| format!("set ProgID default: {e}"))?;
+
+    // FriendlyTypeName
+    prog_key
+        .set_value("FriendlyTypeName", &"Markdown Document")
+        .map_err(|e| format!("set FriendlyTypeName: {e}"))?;
+
+    // DefaultIcon
+    let (icon_key, _) = prog_key
+        .create_subkey("DefaultIcon")
+        .map_err(|e| format!("create DefaultIcon: {e}"))?;
+    icon_key
+        .set_value("", &format!("{},0", exe_str))
+        .map_err(|e| format!("set icon: {e}"))?;
+
+    // shell\open\command
+    let (cmd_key, _) = prog_key
+        .create_subkey("shell\\open\\command")
+        .map_err(|e| format!("create command key: {e}"))?;
+    cmd_key
+        .set_value("", &open_cmd)
+        .map_err(|e| format!("set command: {e}"))?;
+
+    // 2. Register for each extension
+    for ext in extensions {
+        // Set OpenWithProgids so MarkView appears in "Open with" menu
+        let (owp_key, _) = hkcu
+            .create_subkey(format!("Software\\Classes\\{}\\OpenWithProgids", ext))
+            .map_err(|e| format!("create OpenWithProgids for {ext}: {e}"))?;
+        // Empty binary value to register
+        owp_key
+            .set_raw_value(prog_id, &winreg::RegValue {
+                vtype: REG_NONE,
+                bytes: vec![],
+            })
+            .map_err(|e| format!("set OpenWithProgids for {ext}: {e}"))?;
+
+        // Set the extension default to our ProgID
+        let (ext_key, _) = hkcu
+            .create_subkey(format!("Software\\Classes\\{}", ext))
+            .map_err(|e| format!("create ext key for {ext}: {e}"))?;
+        ext_key
+            .set_value("", &prog_id)
+            .map_err(|e| format!("set ext default for {ext}: {e}"))?;
+
+        // Clear UserChoice so Windows re-evaluates (best effort — may be protected)
+        let uc_path = format!(
+            "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts\\{}\\UserChoice",
+            ext
+        );
+        let _ = hkcu.delete_subkey_all(&uc_path); // ignore errors — often protected
+    }
+
+    // 3. Register as a "Registered Application" for Windows Settings integration
+    let (cap_key, _) = hkcu
+        .create_subkey("Software\\MarkView\\Capabilities")
+        .map_err(|e| format!("create Capabilities: {e}"))?;
+    cap_key
+        .set_value("ApplicationName", &"MarkView - Markdown Reader")
+        .map_err(|e| format!("set ApplicationName: {e}"))?;
+    cap_key
+        .set_value("ApplicationDescription", &"A clean, fast Markdown reader for Windows")
+        .map_err(|e| format!("set ApplicationDescription: {e}"))?;
+
+    let (fa_key, _) = cap_key
+        .create_subkey("FileAssociations")
+        .map_err(|e| format!("create FileAssociations: {e}"))?;
+    for ext in extensions {
+        fa_key
+            .set_value(ext, &prog_id)
+            .map_err(|e| format!("set FileAssociation for {ext}: {e}"))?;
+    }
+
+    let (reg_apps, _) = hkcu
+        .create_subkey("Software\\RegisteredApplications")
+        .map_err(|e| format!("create RegisteredApplications: {e}"))?;
+    reg_apps
+        .set_value("MarkView", &"Software\\MarkView\\Capabilities")
+        .map_err(|e| format!("set RegisteredApplications: {e}"))?;
+
+    // 4. Notify the shell that associations have changed
+    notify_shell_assoc_changed();
+
+    Ok(())
+}
+
+/// Call SHChangeNotify(SHCNE_ASSOCCHANGED) to tell Explorer to refresh file associations.
+#[cfg(target_os = "windows")]
+fn notify_shell_assoc_changed() {
+    // Load shell32.dll and call SHChangeNotify dynamically to avoid linking issues.
+    // SHCNE_ASSOCCHANGED = 0x08000000, SHCNF_IDLIST = 0x0000
+    use std::ffi::CString;
+    let lib_name = CString::new("shell32.dll").unwrap();
+    let fn_name = CString::new("SHChangeNotify").unwrap();
+    unsafe {
+        let lib = winapi_load_library(lib_name.as_ptr());
+        if !lib.is_null() {
+            let func = winapi_get_proc(lib, fn_name.as_ptr());
+            if !func.is_null() {
+                let sh_change_notify: unsafe extern "system" fn(i32, u32, *const (), *const ()) =
+                    std::mem::transmute(func);
+                sh_change_notify(0x08000000, 0x0000, std::ptr::null(), std::ptr::null());
+            }
+        }
+    }
+}
+
+#[cfg(target_os = "windows")]
+unsafe fn winapi_load_library(name: *const i8) -> *mut std::ffi::c_void {
+    extern "system" {
+        fn LoadLibraryA(lpLibFileName: *const i8) -> *mut std::ffi::c_void;
+    }
+    unsafe { LoadLibraryA(name) }
+}
+
+#[cfg(target_os = "windows")]
+unsafe fn winapi_get_proc(module: *mut std::ffi::c_void, name: *const i8) -> *mut std::ffi::c_void {
+    extern "system" {
+        fn GetProcAddress(hModule: *mut std::ffi::c_void, lpProcName: *const i8) -> *mut std::ffi::c_void;
+    }
+    unsafe { GetProcAddress(module, name) }
 }
 
 /// On Linux, ensure a user-local markview.desktop exists at

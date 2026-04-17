@@ -23,8 +23,8 @@ LLMs produce them.
 | Format | Link |
 |---------|------|
 | Microsoft Store | [Get it from Microsoft Store](https://apps.microsoft.com/detail/9n3cwdlvl9tq?hl=en-gb&gl=AU&ocid=pdpshare) |
-| Portable (.exe) | [MarkView_v1.0.3_portable.exe](https://github.com/scos-lab/markview/releases/download/v1.0.3/MarkView_v1.0.3_portable.exe) |
-| Installer (MSI) | [MarkView_v1.0.3_x64.msi](https://github.com/scos-lab/markview/releases/download/v1.0.3/MarkView.-.Markdown.Reader_1.0.3_x64_en-US.msi) |
+| Portable (.exe) | [MarkView_v1.0.5_portable.exe](https://github.com/scos-lab/markview/releases/download/v1.0.5/MarkView_v1.0.5_portable.exe) |
+| Installer (MSI) | [MarkView_v1.0.5_x64.msi](https://github.com/scos-lab/markview/releases/download/v1.0.5/MarkView.-.Markdown.Reader_1.0.5_x64_en-US.msi) |
 
 > **Note:** Windows SmartScreen may warn about downloaded `.exe` / `.msi` files because they are not code-signed. To bypass: click **"More info"** → **"Run anyway"**. Alternatively, right-click the file → **Properties** → check **"Unblock"** → OK. The **Microsoft Store** version does not have this issue.
 
@@ -66,8 +66,8 @@ handler" to bind `.md` files to MarkView system-wide.
 - **Font Size Control** — Adjustable (12–28 px), persisted.
 - **File Watching** — Auto-reloads when the file is modified externally.
 - **Drag & Drop** — Drop `.md` files directly into the window.
-- **Default `.md` Handler** — Bind in one click (Windows: Settings
-  deep-link; Linux: `xdg-mime default`).
+- **Default `.md` Handler** — One-click "Set as default" on both
+  platforms (Windows: auto-registers via registry; Linux: `xdg-mime default`).
 - **Recent Files** — Last 10 opened files on the welcome screen.
 - **Print** — Clean print output (content only).
 - **Token Estimation** — Document stats with word count and estimated
