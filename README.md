@@ -122,7 +122,7 @@ Each edge carries:
 
 Natural language buries priorities between the lines. STL makes them explicit — and transferable between any AI model (Claude, Gemini, GPT) with near-zero information loss.
 
-Learn more about STL at [stl-lang.org](https://stl-lang.org).
+Learn more about STL at [stl-lang.org](https://stl-lang.org) — source and spec on [GitHub](https://github.com/scos-lab/semantic-tension-language).
 
 ## Development
 
