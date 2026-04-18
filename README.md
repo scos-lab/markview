@@ -1,5 +1,8 @@
 # MarkView
 
+[![Latest release](https://img.shields.io/github/v/release/scos-lab/markview?label=latest&color=blue)](https://github.com/scos-lab/markview/releases)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 An AI-native Markdown reader for Windows and Linux — renders Mermaid
 diagrams, KaTeX math, Vega-Lite charts, and GFM tables the way modern
 LLMs produce them.
@@ -15,6 +18,16 @@ LLMs produce them.
 | Math + tables | Release notes view |
 |---|---|
 | ![KaTeX and tables](markview/docs/images/screenshot-2.png) | ![Syntax highlighting](markview/docs/images/screenshot-4.png) |
+
+## When to Use
+
+MarkView is a **reader**, not an editor. Open it when you want to:
+
+- **See LLM output rendered immediately** — paste a Claude / ChatGPT / Gemini reply that contains Mermaid diagrams or Vega-Lite charts and see them as visuals, not raw JSON / code blocks. No copy-pasting into a separate site.
+- **Read LLM-generated technical reports** — KaTeX math, GFM tables, syntax-highlighted code, and diagrams render in one consistent view.
+- **Open a `.md` file and just read it** — release notes, README files, docs from a cloned repo. No editor UI in the way.
+
+If you need editing, sync, plugins, or note-taking, [Obsidian](https://obsidian.md/), [Typora](https://typora.io/), and [MarkText](https://github.com/marktext/marktext) are great. MarkView is intentionally read-only and lightweight — no account, no sync, no telemetry.
 
 ## Download
 
@@ -49,6 +62,15 @@ chmod +x MarkView-1.0.5-amd64.AppImage
 After install, open the About panel and click "Set MarkView as default .md
 handler" to bind `.md` files to MarkView system-wide.
 
+### Linux Troubleshooting
+
+| Symptom | Fix |
+|---------|-----|
+| `.AppImage` won't launch on Ubuntu 24.04 (`error while loading shared libraries: libfuse.so.2`) | `sudo apt install libfuse2t64` |
+| `.deb` install fails with WebKit dependency error on older Debian / Ubuntu | `sudo apt install libwebkit2gtk-4.1-0` (or `-4.0-37` on older releases) |
+| "Set as default" doesn't take effect | Run manually: `xdg-mime default markview-reader.desktop text/markdown` |
+| Snap version can't open files outside home directory | `sudo snap connect markview-reader:removable-media` (and/or `:home`) |
+
 ## Features
 
 - **Mermaid diagrams** — Flowchart, sequence, state, class, ERD, gantt,
@@ -72,6 +94,19 @@ handler" to bind `.md` files to MarkView system-wide.
 - **Print** — Clean print output (content only).
 - **Token Estimation** — Document stats with word count and estimated
   token count.
+
+## Keyboard Shortcuts
+
+| Shortcut | Action |
+|----------|--------|
+| `Ctrl+O` | Open file |
+| `Ctrl+W` | Close current tab |
+| `Ctrl+Tab` / `Ctrl+Shift+Tab` | Next / previous tab |
+| `Ctrl+F` | Search in document |
+| `Ctrl+B` | Toggle sidebar (TOC / folder browser) |
+| `Ctrl+P` | Print |
+| `Ctrl+Shift+T` | Toggle light / dark theme |
+| `Ctrl+=` / `Ctrl+-` / `Ctrl+0` | Font size: increase / decrease / reset |
 
 ## Tech Stack
 
@@ -140,7 +175,7 @@ npm run tauri build
 
 ## License
 
-MIT
+[MIT](LICENSE) — © 2026 Wuko-Syn DEV / scos-lab. Free to use, fork, and modify.
 
 ## Developed by
 
