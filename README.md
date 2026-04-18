@@ -7,8 +7,6 @@ An AI-native Markdown reader for Windows and Linux — renders Mermaid
 diagrams, KaTeX math, Vega-Lite charts, and GFM tables the way modern
 LLMs produce them.
 
-**Free and open source ([MIT](LICENSE)). No accounts, no ads, no telemetry, no network calls.**
-
 ![MarkView — AI-Native Markdown Reader](markview/docs/images/screenshot-3.png)
 
 ### Gallery
