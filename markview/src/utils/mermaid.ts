@@ -67,34 +67,43 @@ export async function renderMermaidBlocks(
   );
   blocks.forEach((b) => b.setAttribute('data-mermaid-claimed', '1'));
 
-  for (const codeEl of blocks) {
-    if (isCancelled()) return;
-    if (!codeEl.isConnected) continue; // detached during a re-render
-    const source = codeEl.textContent ?? '';
-    const pre = codeEl.closest('pre');
-    const host = pre ?? codeEl;
-    if (!host.isConnected) continue;
-    const id = `mermaid-${Date.now()}-${++renderCounter}`;
+  try {
+    for (const codeEl of blocks) {
+      if (isCancelled()) return;
+      if (!codeEl.isConnected) continue; // detached during a re-render
+      const source = codeEl.textContent ?? '';
+      const pre = codeEl.closest('pre');
+      const host = pre ?? codeEl;
+      if (!host.isConnected) continue;
+      const id = `mermaid-${Date.now()}-${++renderCounter}`;
 
-    try {
-      const { svg, bindFunctions } = await mermaid.render(id, source);
-      if (isCancelled() || !host.isConnected) continue;
-      const wrapper = document.createElement('div');
-      wrapper.className = 'mermaid-diagram';
-      wrapper.setAttribute('data-mermaid-rendered', '1');
-      wrapper.setAttribute('data-mermaid-source', source);
-      wrapper.innerHTML = svg;
-      host.replaceWith(wrapper);
-      if (bindFunctions) bindFunctions(wrapper);
-    } catch (err) {
-      if (isCancelled() || !host.isConnected) continue;
-      const msg = err instanceof Error ? err.message : String(err);
-      const errEl = document.createElement('pre');
-      errEl.className = 'mermaid-error';
-      errEl.setAttribute('data-mermaid-rendered', '1');
-      errEl.textContent = `Mermaid render error:\n${msg}\n\nSource:\n${source}`;
-      host.replaceWith(errEl);
+      try {
+        const { svg, bindFunctions } = await mermaid.render(id, source);
+        if (isCancelled() || !host.isConnected) continue;
+        const wrapper = document.createElement('div');
+        wrapper.className = 'mermaid-diagram';
+        wrapper.setAttribute('data-mermaid-rendered', '1');
+        wrapper.setAttribute('data-mermaid-source', source);
+        wrapper.innerHTML = svg;
+        host.replaceWith(wrapper);
+        if (bindFunctions) bindFunctions(wrapper);
+      } catch (err) {
+        if (isCancelled() || !host.isConnected) continue;
+        const msg = err instanceof Error ? err.message : String(err);
+        const errEl = document.createElement('pre');
+        errEl.className = 'mermaid-error';
+        errEl.setAttribute('data-mermaid-rendered', '1');
+        errEl.textContent = `Mermaid render error:\n${msg}\n\nSource:\n${source}`;
+        host.replaceWith(errEl);
+      }
     }
+  } finally {
+    // Release the claim on anything we did not replace — a cancelled render
+    // would otherwise leave the block marked forever and every later pass
+    // would skip it, leaving the diagram as a plain code block.
+    blocks.forEach((b) => {
+      if (b.isConnected) b.removeAttribute('data-mermaid-claimed');
+    });
   }
 }
 

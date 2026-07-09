@@ -47,42 +47,51 @@ export async function renderVegaBlocks(
   );
   blocks.forEach((b) => b.setAttribute('data-vega-claimed', '1'));
 
-  for (const codeEl of blocks) {
-    if (isCancelled()) return;
-    if (!codeEl.isConnected) continue;
-    const source = codeEl.textContent ?? '';
-    const pre = codeEl.closest('pre');
-    const host = pre ?? codeEl;
-    if (!host.isConnected) continue;
-    const mode = codeEl.classList.contains('language-vega') ? 'vega' : 'vega-lite';
+  try {
+    for (const codeEl of blocks) {
+      if (isCancelled()) return;
+      if (!codeEl.isConnected) continue;
+      const source = codeEl.textContent ?? '';
+      const pre = codeEl.closest('pre');
+      const host = pre ?? codeEl;
+      if (!host.isConnected) continue;
+      const mode = codeEl.classList.contains('language-vega') ? 'vega' : 'vega-lite';
 
-    let spec: unknown;
-    try {
-      spec = JSON.parse(source);
-    } catch (err) {
-      renderError(host, source, `Invalid JSON: ${(err as Error).message}`);
-      continue;
+      let spec: unknown;
+      try {
+        spec = JSON.parse(source);
+      } catch (err) {
+        renderError(host, source, `Invalid JSON: ${(err as Error).message}`);
+        continue;
+      }
+
+      const wrapper = document.createElement('div');
+      wrapper.className = 'vega-chart';
+      wrapper.setAttribute('data-vega-rendered', '1');
+      wrapper.setAttribute('data-vega-source', source);
+      wrapper.setAttribute('data-vega-mode', mode);
+      host.replaceWith(wrapper);
+
+      try {
+        await embed(wrapper, spec as any, {
+          mode: mode as any,
+          actions: false,
+          renderer: 'svg',
+          theme: vegaThemeFor(theme),
+        });
+        if (isCancelled() || !wrapper.isConnected) continue;
+      } catch (err) {
+        if (isCancelled() || !wrapper.isConnected) continue;
+        renderError(wrapper, source, (err as Error).message);
+      }
     }
-
-    const wrapper = document.createElement('div');
-    wrapper.className = 'vega-chart';
-    wrapper.setAttribute('data-vega-rendered', '1');
-    wrapper.setAttribute('data-vega-source', source);
-    wrapper.setAttribute('data-vega-mode', mode);
-    host.replaceWith(wrapper);
-
-    try {
-      await embed(wrapper, spec as any, {
-        mode: mode as any,
-        actions: false,
-        renderer: 'svg',
-        theme: vegaThemeFor(theme),
-      });
-      if (isCancelled() || !wrapper.isConnected) continue;
-    } catch (err) {
-      if (isCancelled() || !wrapper.isConnected) continue;
-      renderError(wrapper, source, (err as Error).message);
-    }
+  } finally {
+    // Release the claim on anything we did not replace — a cancelled render
+    // would otherwise leave the block marked forever and every later pass
+    // would skip it, leaving the chart as a plain code block.
+    blocks.forEach((b) => {
+      if (b.isConnected) b.removeAttribute('data-vega-claimed');
+    });
   }
 }
 
